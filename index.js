@@ -197,6 +197,10 @@ controller.hears('hello', 'direct_message', function (bot, message) {
     console.log(bot, message);
 });
 
+controller.hears('reset pizzas', 'direct_mention', (bot, message) => {
+    bot.say({text: `${message.user} debugging`});
+});
+
 controller.hears('pizzas', 'direct_mention', (bot, message) => {
     MongoClient.connect(url, (err, client) => {
         const db = client.db(dbName);
@@ -207,9 +211,7 @@ controller.hears('pizzas', 'direct_mention', (bot, message) => {
     });
 });
 
-controller.hears('reset pizzas', 'direct_mention', (bot, message) => {
-    bot.say({text: `${message.user} debugging`});
-});
+
 
 // controller.hears('pizzas', 'mention', (bot, message) => {
 //     console.log('test');
