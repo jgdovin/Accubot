@@ -200,6 +200,9 @@ controller.hears('hello', 'direct_message', function (bot, message) {
 controller.hears('reset pizzas', 'direct_mention', (bot, message) => {
     if (message.user === 'UFWBRBMFH') {
         resetPizzas();
+        bot.say({ text: `pizzas have been reset to 5 for the day for everyone`, channel: message.channel });
+    } else {
+        bot.say({ text: `:no:`, channel: message.channel });
     }
 });
 
