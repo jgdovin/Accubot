@@ -198,7 +198,9 @@ controller.hears('hello', 'direct_message', function (bot, message) {
 });
 
 controller.hears('reset pizzas', 'direct_mention', (bot, message) => {
-    bot.say({text: `${message.user} debugging`, channel: message.channel});
+    if (message.user === 'UFWBRBMFH') {
+        resetPizzas();
+    }
 });
 
 controller.hears('pizzas', 'direct_mention', (bot, message) => {
