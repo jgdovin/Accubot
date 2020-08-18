@@ -250,6 +250,10 @@ controller.hears('dance', 'direct_mention', (bot, message) => {
     bot.say({ text: 'https://media.giphy.com/media/werVqqNW4mixG/giphy.gif', channel: message.channel });
 });
 
+controller.hears(':pizzatime:', 'ambient', (bot, message) => {
+    bot.say({ text: 'ITS PIZZA TIME DAMMIT!', channel: message.channel });
+});
+
 controller.hears(':pizza:', 'ambient', (bot, message) => {
     const usersMatch = message.text.match(/((?<=@).+?(?=\>))/ig);
     if (!usersMatch) {
