@@ -6,6 +6,7 @@
 const MongoClient = require('mongodb').MongoClient;
 const url = 'mongodb://localhost:27017';
 const dbName = 'accubot';
+var cron = require('node-cron');
 
 /**
  * Define a function for initiating a conversation on installation
@@ -56,7 +57,9 @@ function onStartup(bot) {
         });
     });
 
-
+    cron.schedule('0 0 * * *', () => {
+        resetPizzas();
+      });
 }
 
 
@@ -149,6 +152,18 @@ const getPIzzaEarned = (user, cb) => {
     });
 };
 
+const resetPizzas = () => {
+    MongoClient.connect(url, (err, client) => {
+        const db = client.db(dbName);
+
+        if (err) {
+            console.log(err);
+            return;
+        }
+        const collection = db.collection('employees');
+        collection.updateMany({}, { '$set': { 'available': 5 } })
+    });
+};
 
 /**
  * A demonstration for how to handle websocket events. In this case, just log when we have and have not
@@ -190,6 +205,10 @@ controller.hears('pizzas', 'direct_mention', (bot, message) => {
             bot.say({ text: `<@${message.user}> You currently have earned ${result.earned} pizzas and ${result.available} pizzas left to give away!`, channel: message.channel });
         });
     });
+});
+
+controller.hears('reset pizzas', 'direct_mention', (bot, message) => {
+    bot.say({text: `${message.user} debugging`});
 });
 
 // controller.hears('pizzas', 'mention', (bot, message) => {
