@@ -263,9 +263,9 @@ controller.hears(':pizza:', 'ambient', (bot, message) => {
     } else {
         getPizzaAvailable(message.user, (pizzaAvailable) => {
             if (usersMatch.length > pizzaAvailable) {
-                bot.say({ text: `You tried to give ${usersMatch.length} pizzas out but only have ${pizzaAvailable} pizzas available`, channel: message.user });
+                bot.whisper(message, `You tried to give ${usersMatch.length} pizzas out but only have ${pizzaAvailable} pizzas available`);
             } else {
-                bot.say({ text: `<@${usersMatch.join('><@')}> received a pizza from you. You have ${pizzaAvailable - usersMatch.length} pizzas left to give out today!`, channel: message.user });
+                bot.whisper(message, `<@${usersMatch.join('><@')}> received a pizza from you. You have ${pizzaAvailable - usersMatch.length} pizzas left to give out today!`);
 
                 usersMatch.forEach((user) => {
                     bot.say({ text: `You received a pizza from <@${message.user}> - ${message.text}`, channel: user });
