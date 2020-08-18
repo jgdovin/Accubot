@@ -228,15 +228,15 @@ controller.hears('pizzas', 'direct_mention', (bot, message) => {
 controller.hears('tell a joke', 'direct_mention', (bot, message) => {
     const jokes = [
         ['How do you fix a broken pizza?', 'With tomato paste'],
-        ['Why did the hipster burn his mouth while eating pizza?', 'He at it way before it was cool'],
+        ['Why did the hipster burn his mouth while eating pizza?', 'He ate it way before it was cool'],
         ['What did the pizza say to the delivery guy?', 'You don\'t pepper-own me'],
         ['What does pizza wear to smell good?', 'Calzogne'],
-        ['What did the pepperoni say to the cheese?', 'Slice to meat you!'],
+        ['What did the pepperoni say to the cheese?', 'It is slice to meat you!'],
         ['Why does the mushroom always get invited to pizza parties?', 'Because he is such a fungi!'],
-        ['What type of person does\'nt like pizza?', 'A weir-dough'],
+        ['What type of person doesn\'t like pizza?', 'A weir-dough'],
         ['Did you hear about the Italian chef with the terminal illness?', 'He pastaway. Now he\'s just a pizza history'],
         ['What\'s a pizza maker\'s favorite song?', 'Slice, Slice Baby'],
-        ['Why was the pizzeria desperate for business?', 'Becayse they kneaded the dough!']
+        ['Why was the pizzeria desperate for business?', 'Because they kneaded the dough!']
     ];
     const rando = getRandomInt(0, jokes.length);
     bot.say({ text: jokes[rando][0], channel: message.channel });
