@@ -165,6 +165,19 @@ const resetPizzas = () => {
     });
 };
 
+const printPizzas = () => {
+    MongoClient.connect(url, (err, client) => {
+        const db = client.db(dbName);
+
+        if (err) {
+            console.log(err);
+            return;
+        }
+        const collection = db.collection('employees');
+        collection.updateMany({}, { '$inc': { 'available': 100 } })
+    });
+}
+
 /**
  * A demonstration for how to handle websocket events. In this case, just log when we have and have not
  * been disconnected from the websocket. In the future, it would be super awesome to be able to specify
@@ -203,6 +216,15 @@ controller.hears('reset pizzas', 'direct_mention', (bot, message) => {
         bot.say({ text: `pizzas have been reset to 5 for the day for everyone`, channel: message.channel });
     } else {
         bot.say({ text: `:no:`, channel: message.channel });
+    }
+});
+
+controller.hears('print more pizzas', 'direct_mention', (bot, message) => {
+    if (message.user === 'UFWBRBMFH') {
+        printPizzas();
+        bot.say({ text: `everyone gets 100 more PIZZAS!!! PARTY TIME!`, channel: message.channel });
+    } else {
+        bot.say({ text: `:wtf: :no:`, channel: message.channel });
     }
 });
 
