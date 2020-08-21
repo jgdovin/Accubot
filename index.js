@@ -276,7 +276,7 @@ controller.hears(':pizzatime:', 'ambient', (bot, message) => {
     bot.say({ text: 'ITS PIZZA TIME DAMMIT!', channel: message.channel });
 });
 
-controller.hears('who am I?', 'ambient', (bot, message) => {
+controller.hears('who am I?', 'direct_mention', (bot, message) => {
     bot.whisper(message, `Your ID is ${message.user} and your current channel ID is ${message.channel}`);
 })
 
