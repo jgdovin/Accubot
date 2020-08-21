@@ -276,6 +276,10 @@ controller.hears(':pizzatime:', 'ambient', (bot, message) => {
     bot.say({ text: 'ITS PIZZA TIME DAMMIT!', channel: message.channel });
 });
 
+controller.hears('who am I?', 'ambient', (bot, message) => {
+    bot.whisper(message, `Your ID is ${message.user} and your current channel ID is ${message.channel}`);
+})
+
 controller.hears(':pizza:', 'ambient', (bot, message) => {
     const usersMatch = message.text.match(/((?<=@).+?(?=\>))/ig);
     if (!usersMatch) {
