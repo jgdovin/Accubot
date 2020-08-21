@@ -133,7 +133,7 @@ const getPizzaAvailable = (user, cb) => {
     });
 };
 
-const getPIzzaEarned = (user, cb) => {
+const getPizzaEarned = (user, cb) => {
     MongoClient.connect(url, (err, client) => {
         const db = client.db(dbName);
 
@@ -146,7 +146,7 @@ const getPIzzaEarned = (user, cb) => {
             if (!result) {
                 cb(false);
             } else {
-                cb(resulte.earned);
+                cb(result.earned);
             }
         })
     });
@@ -310,33 +310,41 @@ controller.hears(':pizza:', 'ambient', (bot, message) => {
         });
 
     }
-    // message.match.forEach((user) => {
-    //     MongoClient.connect(url, (err, client) => {
-    //         const db = client.db(dbName);
+});
 
-    //         if (err) {
-    //             console.log(err);
-    //             return;
-    //         }
+controller.hears(':pizzapie:', 'ambient', (bot, message) => {
+    const usersMatch = message.text.match(/((?<=@).+?(?=\>))/ig);
+    if (!usersMatch) {
+        bot.whisper(message, "That's a tasty Pizza Pie!");
+    } else if (usersMatch.includes(message.user)) {
+        bot.say({ text: `You gave yourself 8 of your own pizza slices. Congrats, your pizza falls on the floor and you are left with dirty pizza!`, channel: message.channel });
+    } else {
+        getPizzaEarned(message.user, (pizzaAvailable) => {
+            if (usersMatch.length > pizzaAvailable / 8) {
+                bot.whisper(message, `You tried to give ${usersMatch.length * 8} of your earned pizza out but only have ${pizzaAvailable} pizzas in your earned stash`);
+            } else {
+                bot.whisper(message, `<@${usersMatch.join('><@')}> received a whole pie from you. You have ${pizzaAvailable - (usersMatch.length * 8)} pizzas in your earned stash`);
 
-    //         // bot.say({ text: `You tried to give ${message.match.length} users some :pizza: but I don't have any to give yet!`, channel: message.channel });
-    //         const collection = db.collection('employees');
-    //         collection.findOne({ employeeId: user }, (err, result) => {
-    //             if (!result) {
-    //                 collection.insertOne({ employeeId: user, earned: 1 });
-    //             } else {
-    //                 collection.updateOne({ employeeId: user }, { '$set': { 'earned': result.earned + 1 } })
-    //             }
-    //             console.log(getUsername(bot, message.user));
-    //             // bot.say({ text: `${getUsername(bot, message.user)} gave ${getUsername(bot, user)} a pizza!`, channel: message.channel });
-    //         });
-    //     });
+                usersMatch.forEach((user) => {
+                    bot.say({ text: `You received a whole pie from <@${message.user}> - ${message.text}`, channel: user });
+                    MongoClient.connect(url, (err, client) => {
+                        const db = client.db(dbName);
 
-    // });
+                        if (err) {
+                            console.log(err);
+                            return;
+                        }
 
-    // var currentUser;
+                        const collection = db.collection('employees');
 
-    // bot.reply(message, 'Yo');
+                        collection.updateOne({ employeeId: user }, { '$inc': { 'earned': 8 } });
+
+                        collection.updateOne({ employeeId: message.user }, { '$inc': { 'earned': -8 } });
+                    });
+                });
+            }
+        });
+    }
 });
 
 
