@@ -48,7 +48,7 @@ module.exports = function(controller) {
                         return realName;
                     }));
 
-                    userIds.forEach(userId => {
+                    userIds.forEach(async userId => {
                         ops.push(givePizzaOp(userId, userPizzas[userId]));
                         await bot.startPrivateConversation(userId);
                         await bot.say(`You received ${userPizzas[userId]} pizzas from ${getUserRealName(bot, userId)}`);
