@@ -1,22 +1,16 @@
 const { getUserIdsFromText, getUserRealName, reply, replyEphemeral } = require('../helpers/messageAndUsers');
 
-const getPizzasAvailable = async (collection, user, cb) => {
+const getPizzasAvailable = async (collection, user) => {
+    let pizzas;
     await collection.findOne({ userId: user }, async (err, result) => {
-        if (!result) {
-            cb(false);
-        } else {
-            cb(result.pizzas);
-        }
+        pizzas = result.pizzas || false;
     });
 };
 
 const getPizzasEarned = async (collection, user, cb) => {
+    let pizzas;
     await collection.findOne({ userId: user }, async (err, result) => {
-        if (!result) {
-            cb(false);
-        } else {
-            cb(result.pizzasEarned);
-        }
+        pizzas = result.pizzasEarned || false;
     });
 };
 
@@ -49,29 +43,28 @@ module.exports = function(controller) {
             const totalPizzas = pizzaCounts.reduce((totalPizzas, pizzaCount) => {
                 return totalPizzas + pizzaCount;
             }, 0);
-            await getPizzasAvailable(controller.db.users, message.user, async pizzasAvailable => {
-                if (totalPizzas > pizzasAvailable) {
-                    replyEphemeral(bot, message, `You tried to give out ${totalPizzas} but only have ${pizzasAvailable} left in your backpack! (Why are you keeping them in your backpack?)`);
-                } else {
-                    const ops = [];
-                    const usersGiven = await Promise.all(userIds.map(async userId => {
-                        const realName = await getUserRealName(bot, userId);
-                        return realName;
-                    }));
-                    userIds.forEach(async pizzaUserId => {
-                        const userId = pizzaUserId;
-                        const pizzasAvailable = await getPizzasAvailable(bot, userId);
-                        const pizzasEarned = await getPizzasEarned(bot, userId);
-                        ops.push(givePizzaOp(userId, userPizzas[userId], userPizzas[userId]));
-                        await bot.startPrivateConversation(userId);
-                        await bot.say(`You received ${userPizzas[userId]} pizzas from ${await getUserRealName(bot, message.user)}. Your new Balance is ${pizzasAvailable + userPizzas[userId]} and you have earned ${pizzasEarned + userPizzas[userId]} in this lifetime`);
-                    });
-                    ops.push(givePizzaOp(message.user, -totalPizzas));
-                    controller.db.users.bulkWrite(ops, { ordered: false });
-                    const newBalance = pizzasAvailable - totalPizzas;
-                    replyEphemeral(bot, message, `You gave away ${totalPizzas} pizzas total to: ${usersGiven.join(', ')}. Your new balance is ${newBalance}`);
-                }
-            });
+            const pizzasAvailable = await getPizzasAvailable(controller.db.users, message.user);
+            if (totalPizzas > pizzasAvailable) {
+                replyEphemeral(bot, message, `You tried to give out ${totalPizzas} but only have ${pizzasAvailable} left in your backpack! (Why are you keeping them in your backpack?)`);
+            } else {
+                const ops = [];
+                const usersGiven = await Promise.all(userIds.map(async userId => {
+                    const realName = await getUserRealName(bot, userId);
+                    return realName;
+                }));
+                userIds.forEach(async pizzaUserId => {
+                    const userId = pizzaUserId;
+                    const pizzasAvailable = await getPizzasAvailable(controller.db.users, userId);
+                    const pizzasEarned = await getPizzasEarned(controller.db.users, userId);
+                    ops.push(givePizzaOp(userId, userPizzas[userId], userPizzas[userId]));
+                    await bot.startPrivateConversation(userId);
+                    await bot.say(`You received ${userPizzas[userId]} pizzas from ${await getUserRealName(bot, message.user)}. Your new Balance is ${pizzasAvailable + userPizzas[userId]} and you have earned ${pizzasEarned + userPizzas[userId]} in this lifetime`);
+                });
+                ops.push(givePizzaOp(message.user, -totalPizzas));
+                controller.db.users.bulkWrite(ops, { ordered: false });
+                const newBalance = pizzasAvailable - totalPizzas;
+                replyEphemeral(bot, message, `You gave away ${totalPizzas} pizzas total to: ${usersGiven.join(', ')}. Your new balance is ${newBalance}`);
+            }
         }
     });
 
