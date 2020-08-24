@@ -59,9 +59,10 @@ module.exports = function(controller) {
                         return realName;
                     }));
                     userIds.forEach(async pizzaUserId => {
-                        ops.push(givePizzaOp(pizzaUserId, userPizzas[pizzaUserId], userPizzas[pizzaUserId]));
-                        await bot.startPrivateConversation(pizzaUserId);
-                        await bot.say(`You received ${userPizzas[pizzaUserId]} pizzas from ${await getUserRealName(bot, message.user)}`);
+                        const userId = pizzaUserId;
+                        ops.push(givePizzaOp(userId, userPizzas[userId], userPizzas[userId]));
+                        await bot.startPrivateConversation(userId);
+                        await bot.say(`You received ${userPizzas[userId]} pizzas from ${await getUserRealName(bot, message.user)}`);
                     });
                     ops.push(givePizzaOp(message.user, -totalPizzas));
                     controller.db.users.bulkWrite(ops, { ordered: false });
