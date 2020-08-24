@@ -58,6 +58,7 @@ module.exports = function(controller) {
                     const pizzasEarned = await getPizzasEarned(controller.db.users, userId);
                     ops.push(givePizzaOp(userId, userPizzas[userId], userPizzas[userId]));
                     await bot.startPrivateConversation(userId);
+                    console.log(pizzasAvailable, pizzasEarned, userPizzas[userId]);
                     await bot.say(`You received ${userPizzas[userId]} pizzas from ${await getUserRealName(bot, message.user)}. Your new Balance is ${pizzasAvailable + userPizzas[userId]} and you have earned ${pizzasEarned + userPizzas[userId]} in this lifetime`);
                 });
                 ops.push(givePizzaOp(message.user, -totalPizzas));
