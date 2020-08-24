@@ -50,11 +50,16 @@ module.exports = function(controller) {
 
                     userIds.forEach(userId => {
                         ops.push(givePizzaOp(userId, userPizzas[userId]));
+                        await bot.startPrivateConversation(userId);
+                        await bot.say(`You received ${userPizzas[userId]} pizzas from ${getUserRealName(bot, userId)}`);
                     });
                     ops.push(givePizzaOp(message.user, -totalPizzas));
                     controller.db.users.bulkWrite(ops, { ordered: false });
                     const newBalance = pizzasAvailable - totalPizzas;
                     replyEphemeral(bot, message, `You gave away ${totalPizzas} pizzas total to: ${usersGiven.join(', ')}. Your new balance is ${newBalance}`);
+
+                    await bot.startPrivateConversation(message.user);
+                    await bot.say(`You received`);
                 }
             });
         }
