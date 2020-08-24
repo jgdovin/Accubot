@@ -10,6 +10,16 @@ const getPizzasAvailable = async (collection, user, cb) => {
     });
 };
 
+const getPizzasEarned = async (collection, user, cb) => {
+    await collection.findOne({ userId: user }, async (err, result) => {
+        if (!result) {
+            cb(false);
+        } else {
+            cb(result.pizzasEarned);
+        }
+    });
+};
+
 const givePizzaOp = (userId, pizzaCount) => {
     return {
         updateOne: {
@@ -18,7 +28,8 @@ const givePizzaOp = (userId, pizzaCount) => {
             },
             update: {
                 $inc: {
-                    pizzas: pizzaCount
+                    pizzas: pizzaCount,
+                    pizzasEarned: 1
                 }
             }
         }
@@ -68,6 +79,12 @@ module.exports = function(controller) {
         if (message.command === '/pizzas') {
             await getPizzasAvailable(controller.db.users, message.user, async pizzasAvailable => {
                 replyEphemeral(bot, message, `You currently have ${pizzasAvailable} in your backpack. (weirdo)`)
+            });
+        }
+
+        if (message.command === '/earnedpizzas') {
+            await getPizzasEarned(controller.db.users, message.user, async pizzasEarned => {
+                replyEphemeral(bot, message, `You currently have ${pizzasEarned} in your backpack. (weirdo)`)
             });
         }
 
