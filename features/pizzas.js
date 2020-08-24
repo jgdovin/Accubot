@@ -61,8 +61,10 @@ module.exports = function(controller) {
                     userIds.forEach(async pizzaUserId => {
                         const userId = pizzaUserId;
                         ops.push(givePizzaOp(userId, userPizzas[userId], userPizzas[userId]));
-                        await bot.startPrivateConversation(userId);
-                        await bot.say(`You received ${userPizzas[userId]} pizzas from ${await getUserRealName(bot, message.user)}`);
+                        if (userPizzas[userId]) {
+                            await bot.startPrivateConversation(userId);
+                            await bot.say(`You received ${userPizzas[userId]} pizzas from ${await getUserRealName(bot, message.user)}`);
+                        }
                     });
                     ops.push(givePizzaOp(message.user, -totalPizzas));
                     controller.db.users.bulkWrite(ops, { ordered: false });
