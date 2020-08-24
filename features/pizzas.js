@@ -51,7 +51,7 @@ module.exports = function(controller) {
                     userIds.forEach(async userId => {
                         ops.push(givePizzaOp(userId, userPizzas[userId]));
                         await bot.startPrivateConversation(userId);
-                        await bot.say(`You received ${userPizzas[userId]} pizzas from ${getUserRealName(bot, userId)}`);
+                        await bot.say(`You received ${userPizzas[userId]} pizzas from ${await getUserRealName(bot, userId)}`);
                     });
                     ops.push(givePizzaOp(message.user, -totalPizzas));
                     controller.db.users.bulkWrite(ops, { ordered: false });
