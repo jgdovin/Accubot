@@ -3,6 +3,7 @@ const { getUserIdsFromText, getUserRealName, reply, replyEphemeral } = require('
 const getPizzasAvailable = async (collection, user) => {
     let pizzas;
     await collection.findOne({ userId: user }, async (err, result) => {
+        console.log(result);
         pizzas = result.pizzas || false;
     });
     return pizzas;
@@ -11,6 +12,7 @@ const getPizzasAvailable = async (collection, user) => {
 const getPizzasEarned = async (collection, user, cb) => {
     let pizzas;
     await collection.findOne({ userId: user }, async (err, result) => {
+        console.log(result);
         pizzas = result.pizzasEarned || false;
     });
     return pizzas;
