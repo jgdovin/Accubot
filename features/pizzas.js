@@ -75,15 +75,13 @@ module.exports = function(controller) {
 
     controller.on('slash_command', async (bot, message) => {
         if (message.command === '/pizzas') {
-            await getPizzasAvailable(controller.db.users, message.user, async pizzasAvailable => {
-                replyEphemeral(bot, message, `You currently have ${pizzasAvailable} in your backpack. (weirdo)`)
-            });
+            const pizzas = getPizzasEarned(controller.db.users, message.user);
+            replyEphemeral(bot, message, `You currently have ${pizzas} in your backpack. (weirdo)`);
         }
 
         if (message.command === '/earnedpizzas') {
-            await getPizzasEarned(controller.db.users, message.user, async pizzasEarned => {
-                replyEphemeral(bot, message, `You've earned ${pizzasEarned} total for your lifetime!`)
-            });
+            const pizzas = getPizzasEarned(controller.db.users, message.user);
+            replyEphemeral(bot, message, `You've earned ${pizzas} total for your lifetime!`);
         }
 
         if (message.command === '/whoami') {
