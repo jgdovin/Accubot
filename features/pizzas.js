@@ -84,7 +84,7 @@ module.exports = function(controller) {
 
         if (message.command === '/earnedpizzas') {
             await getPizzasEarned(controller.db.users, message.user, async pizzasEarned => {
-                replyEphemeral(bot, message, `You currently have ${pizzasEarned} in your backpack. (weirdo)`)
+                replyEphemeral(bot, message, `You've earned ${pizzasEarned} total for your lifetime!`)
             });
         }
 
