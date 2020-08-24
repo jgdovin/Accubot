@@ -20,7 +20,7 @@ const getPizzasEarned = async (collection, user, cb) => {
     });
 };
 
-const givePizzaOp = (userId, pizzaCount) => {
+const givePizzaOp = (userId, pizzaCount, pizzasEarned = 0) => {
     return {
         updateOne: {
             filter: {
@@ -29,7 +29,7 @@ const givePizzaOp = (userId, pizzaCount) => {
             update: {
                 $inc: {
                     pizzas: pizzaCount,
-                    pizzasEarned: 1
+                    pizzasEarned
                 }
             }
         }
@@ -59,7 +59,7 @@ module.exports = function(controller) {
                         return realName;
                     }));
                     userIds.forEach(async pizzaUserId => {
-                        ops.push(givePizzaOp(pizzaUserId, userPizzas[pizzaUserId]));
+                        ops.push(givePizzaOp(pizzaUserId, userPizzas[pizzaUserId], userPizzas[pizzaUserId]));
                         await bot.startPrivateConversation(pizzaUserId);
                         await bot.say(`You received ${userPizzas[pizzaUserId]} pizzas from ${await getUserRealName(bot, message.user)}`);
                     });
