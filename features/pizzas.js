@@ -5,6 +5,7 @@ const getPizzasAvailable = async (collection, user) => {
     await collection.findOne({ userId: user }, async (err, result) => {
         pizzas = result.pizzas || false;
     });
+    return pizzas;
 };
 
 const getPizzasEarned = async (collection, user, cb) => {
@@ -12,6 +13,7 @@ const getPizzasEarned = async (collection, user, cb) => {
     await collection.findOne({ userId: user }, async (err, result) => {
         pizzas = result.pizzasEarned || false;
     });
+    return pizzas;
 };
 
 const givePizzaOp = (userId, pizzaCount, pizzasEarned = 0) => {
