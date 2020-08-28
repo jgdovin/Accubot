@@ -35,6 +35,14 @@ const givePizzaOp = (userId, pizzaCount, pizzasEarned = 0) => {
 };
 
 module.exports = function(controller) {
+    controller.hears('help', 'message', async (bot, message) => {
+        reply(bot, message, 'help message');
+    });
+
+    controller.hears(':aaa:', 'message', async (bot, message) => {
+        console.log(message);
+    });
+
     controller.hears(':pizza:', 'message', async (bot, message) => {
         const userPizzas = getUserIdsFromText(message);
         const userIds = Object.keys(userPizzas);
