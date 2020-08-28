@@ -40,7 +40,7 @@ module.exports = function(controller) {
     });
 
     controller.hears(':aaa:', 'message', async (bot, message) => {
-        const pizzaBot = controller.spawn('T033MB5HN');
+        const pizzaBot = await controller.spawn('T033MB5HN');
         await pizzaBot.startPrivateConversation(message.user);
         await bot.say('this is a test');
         console.log(message);
