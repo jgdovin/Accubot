@@ -39,13 +39,6 @@ module.exports = function(controller) {
         reply(bot, message, 'help message');
     });
 
-    controller.hears(':aaa:', 'message', async (bot, message) => {
-        const pizzaBot = await controller.spawn('T033MB5HN');
-        await pizzaBot.startPrivateConversation(message.user);
-        await pizzaBot.say('this is a test');
-        console.log(message);
-    });
-
     controller.hears(':pizza:', 'message', async (bot, message) => {
         const userPizzas = getUserIdsFromText(message);
         const userIds = Object.keys(userPizzas);
@@ -69,12 +62,12 @@ module.exports = function(controller) {
                 }));
                 userIds.forEach(async pizzaUserId => {
                     const userId = pizzaUserId;
+                    const pizzaBot = await controller.spawn('T033MB5HN');
                     const pizzasAvailable = await getPizzasAvailable(controller.db.users, userId);
                     const pizzasEarned = await getPizzasEarned(controller.db.users, userId);
                     ops.push(givePizzaOp(userId, userPizzas[userId], userPizzas[userId]));
-                    await bot.startPrivateConversation(userId);
-                    console.log(pizzasAvailable, pizzasEarned, userPizzas[userId]);
-                    await bot.say(`You received ${userPizzas[userId]} pizzas from ${await getUserRealName(bot, message.user)}. Your new Balance is ${pizzasAvailable + userPizzas[userId]} and you have earned ${pizzasEarned + userPizzas[userId]} in this lifetime`);
+                    await pizzaBot.startPrivateConversation(userId);
+                    await pizzaBot.say(`You received ${userPizzas[userId]} pizzas from ${await getUserRealName(bot, message.user)}. Your new Balance is ${pizzasAvailable + userPizzas[userId]} and you have earned ${pizzasEarned + userPizzas[userId]} in this lifetime`);
                 });
                 ops.push(givePizzaOp(message.user, -totalPizzas));
                 controller.db.users.bulkWrite(ops, { ordered: false });
