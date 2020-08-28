@@ -1,18 +1,18 @@
 const { getUserIdsFromText, getUserRealName, reply, replyEphemeral } = require('../helpers/messageAndUsers');
 
-const getPizzasAvailable = async (collection, user) => {
+const getPizzasAvailable = async (collection, userId) => {
+    const user = collection.findOne({ userId });
+    return user.pizzas;
     let pizzas;
-    await collection.findOne({ userId: user }, async (err, result) => {
-        console.log(result);
-        pizzas = result.pizzas;
-    });
-    return pizzas;
+    // await collection.findOne({ userId }, async (err, result) => {
+    //     pizzas = result.pizzas;
+    // });
+    // return pizzas;
 };
 
-const getPizzasEarned = async (collection, user, cb) => {
+const getPizzasEarned = async (collection, userId) => {
     let pizzas;
-    await collection.findOne({ userId: user }, async (err, result) => {
-        console.log(result);
+    await collection.findOne({ userId }, async (err, result) => {
         pizzas = result.pizzasEarned;
     });
     return pizzas;
