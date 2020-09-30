@@ -7,18 +7,7 @@
 const { reply } = require("../helpers/messageAndUsers");
 
 module.exports = function(controller) {
-    controller.hears(':progressstick:', 'message', async (bot, message) => {
-        const userPizzas = getUserIdsFromText(message);
-        const userIds = Object.keys(userPizzas);
-        await reply(bot, message, 
-        `${userIds.join(', ')}
-        :alert::alert::alert::alert::alert::alert::alert::alert::alert:
-        :alert:        You have been       :alert:
-        :alert:   SMACKED with the   :alert:
-        :alert:    PROGRESS STICK     :alert:
-        :alert:    DO YOUR WORK     :alert:
-        :alert::alert::alert::alert::alert::alert::alert::alert::alert:`);
-    });
+
 //     controller.ready(async () => {
 //         if (process.env.MYTEAM) {
 //             let bot = await controller.spawn(process.env.MYTEAM);
