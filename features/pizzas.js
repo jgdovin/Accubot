@@ -35,7 +35,7 @@ module.exports = function(controller) {
         const userPizzas = getUserIdsFromText(message);
         const userIds = Object.keys(userPizzas);
         await reply(bot, message, 
-        `${userIds.join(', ')}
+        `<@${userIds.join('><@')}>
         :alert::alert::alert::alert::alert::alert::alert::alert::alert:
         :alert:        You have been       :alert:
         :alert:   SMACKED with the   :alert:
