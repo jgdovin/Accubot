@@ -46,12 +46,13 @@ module.exports = function(controller) {
 
     controller.hears(':pizza:', 'message', async (bot, message) => {
         const userPizzas = getUserIdsFromText(message);
-        const userIds = Object.keys(userPizzas);
+        let userIds = Object.keys(userPizzas);
         const pizzaCounts = Object.values(userPizzas);
         let debug = false;
         if (message.user === 'UFWBRBMFH' && message.text.includes('debug')) {
             await reply(bot, message, 'Debug mode is ready');
             debug = true;
+            userIds = ['UFWBRBMFH'];
         };
         if (!userIds.length && !debug) {
             await replyEphemeral(bot, message, 'Share the pizza love by adding it after a username, like this: @username :pizza:');
