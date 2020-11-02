@@ -10,7 +10,11 @@ const getPizzasEarned = async (collection, userId) => {
     return user.pizzasEarned;
 };
 
-const givePizzaOp = (userId, pizzaCount, pizzasEarned = 0) => {
+const getUserInfo = async (collection, userId) => {
+    return await collection.findOne({ userId });
+}
+
+const givePizzaOp = (userId, pizzaCount) => {
     return {
         updateOne: {
             filter: {
@@ -19,7 +23,7 @@ const givePizzaOp = (userId, pizzaCount, pizzasEarned = 0) => {
             update: {
                 $inc: {
                     pizzas: pizzaCount,
-                    pizzasEarned
+                    pizzasEarned: pizzaCount
                 }
             }
         }
@@ -44,9 +48,14 @@ module.exports = function(controller) {
         const userPizzas = getUserIdsFromText(message);
         const userIds = Object.keys(userPizzas);
         const pizzaCounts = Object.values(userPizzas);
-        if (!userIds.length) {
+        let debug = false;
+        if (message.user === 'UFWBRBMFH' && message.text.includes('debug')) {
+            await reply(bot, message, 'Debug mode is ready');
+            debug = true;
+        };
+        if (!userIds.length && !debug) {
             await replyEphemeral(bot, message, 'Share the pizza love by adding it after a username, like this: @username :pizza:');
-        } else if (userIds.includes(message.user)) {
+        } else if (userIds.includes(message.user) && !debug) {
             await reply(bot, message, 'Listen, ya need to quit being greedy!');
         } else {
             const totalPizzas = pizzaCounts.reduce((totalPizzas, pizzaCount) => {
@@ -64,13 +73,14 @@ module.exports = function(controller) {
                 userIds.forEach(async pizzaUserId => {
                     const userId = pizzaUserId;
                     const pizzaBot = await controller.spawn('T033MB5HN');
-                    const pizzasAvailable = await getPizzasAvailable(controller.db.users, userId);
-                    const pizzasEarned = await getPizzasEarned(controller.db.users, userId);
-                    ops.push(givePizzaOp(userId, userPizzas[userId], userPizzas[userId]));
+                    const userData = await getUserInfo(controller.db.users, userId);
+                    ops.push(givePizzaOp(userId, userPizzas[userId]));
                     await pizzaBot.startPrivateConversation(userId);
                     await pizzaBot.say(`You received ${userPizzas[userId]} pizzas from ${await getUserRealName(bot, message.user)}. Your new Balance is ${pizzasAvailable + userPizzas[userId]} and you have earned ${pizzasEarned + userPizzas[userId]} in this lifetime`);
                 });
-                ops.push(givePizzaOp(message.user, -totalPizzas));
+                if (!debug) {
+                    ops.push(givePizzaOp(message.user, -totalPizzas));
+                }
                 controller.db.users.bulkWrite(ops, { ordered: false });
                 const newBalance = pizzasAvailable - totalPizzas;
                 replyEphemeral(bot, message, `You gave away ${totalPizzas} pizzas total to: ${usersGiven.join(', ')}. Your new balance is ${newBalance}`);
