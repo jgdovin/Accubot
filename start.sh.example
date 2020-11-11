@@ -1,0 +1,33 @@
+#! /bin/bash
+set -x
+set -e
+LONG_NAME="<botName>"
+SHORT_NAME="<botName>"
+export NODE_BIN_DIR="/usr/bin"
+export NODE_PATH="/usr/lib/node_modules"
+export APPLICATION_PATH="/home/<username>/$LONG_NAME/bot.js"
+export PIDFILE="/home/<username>/$LONG_NAME.pid"
+export LOG="/home/<username>/log/$LONG_NAME.log"
+export MIN_UPTIME="5000"
+export SPIN_SLEEP_TIME="2000"
+export WORKING_DIR="/home/<username>/$LONG_NAME"
+export TOKEN=""
+export CLIENT_SIGNING_SECRET=
+export VERIFICATION_TOKEN=
+export BOT_TOKEN=
+export CLIENT_ID=
+export CLIENT_SECRET=
+export PORT=3000
+exec forever \
+  --pidFile $PIDFILE \
+  -a \
+  -l $LOG \
+  --minUptime $MIN_UPTIME \
+  --spinSleepTime $SPIN_SLEEP_TIME \
+  --workingDir $WORKING_DIR \
+  --no-colors \
+  --watchDirectory $WORKING_DIR \
+  --uid $SHORT_NAME \
+  --process $SHORT_NAME \
+  start $APPLICATION_PATH
+
