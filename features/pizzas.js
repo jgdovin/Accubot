@@ -12,9 +12,15 @@ const getPizzasEarned = async (collection, userId) => {
 
 const getUserInfo = async (collection, userId) => {
     return await collection.findOne({ userId });
-}
+};
 
-const givePizzaOp = (userId, pizzaCount) => {
+const getTopTen = async (collection, type) => {
+    const sort = {};
+    sort[type] = -1;
+    return await collection.find().sort(sort).limit(10).toArray();
+};
+
+const givePizzaOp = (userId, pizzasEarned, pizzas) => {
     return {
         updateOne: {
             filter: {
@@ -22,8 +28,8 @@ const givePizzaOp = (userId, pizzaCount) => {
             },
             update: {
                 $inc: {
-                    pizzas: pizzaCount,
-                    pizzasEarned: pizzaCount
+                    pizzas,
+                    pizzasEarned
                 }
             }
         }
@@ -48,15 +54,10 @@ module.exports = function(controller) {
         const userPizzas = getUserIdsFromText(message);
         let userIds = Object.keys(userPizzas);
         const pizzaCounts = Object.values(userPizzas);
-        let debug = false;
-        if (message.user === 'UFWBRBMFH' && message.text.includes('debug')) {
-            await reply(bot, message, 'Debug mode is ready');
-            debug = true;
-            userIds = ['UFWBRBMFH'];
-        };
-        if (!userIds.length && !debug) {
+
+        if (!userIds.length) {
             await replyEphemeral(bot, message, 'Share the pizza love by adding it after a username, like this: @username :pizza:');
-        } else if (userIds.includes(message.user) && !debug) {
+        } else if (userIds.includes(message.user)) {
             await reply(bot, message, 'Listen, ya need to quit being greedy!');
         } else {
             const totalPizzas = pizzaCounts.reduce((totalPizzas, pizzaCount) => {
@@ -71,18 +72,18 @@ module.exports = function(controller) {
                     const realName = await getUserRealName(bot, userId);
                     return realName;
                 }));
-                userIds.forEach(async pizzaUserId => {
+                for (const pizzaUserId of userIds) {
                     const userId = pizzaUserId;
                     const pizzaBot = await controller.spawn('T033MB5HN');
                     const userData = await getUserInfo(controller.db.users, userId);
-                    ops.push(givePizzaOp(userId, userPizzas[userId]));
+                    const currOp = givePizzaOp(userId, userPizzas[userId], userPizzas[userId]);
+                    ops.push(currOp);
                     await pizzaBot.startPrivateConversation(userId);
-                    await pizzaBot.say(`You received ${userPizzas[userId]} pizzas from ${await getUserRealName(bot, message.user)}. Your new Balance is ${pizzasAvailable + userPizzas[userId]} and you have earned ${pizzasEarned + userPizzas[userId]} in this lifetime`);
-                });
-                if (!debug) {
-                    ops.push(givePizzaOp(message.user, -totalPizzas));
+                    await pizzaBot.say(`You received ${userPizzas[userId]} pizzas from ${await getUserRealName(bot, message.user)}. Your new Balance is ${userData.pizzas + userPizzas[userId]} and you have earned ${userData.pizzasEarned + userPizzas[userId]} in this lifetime`);
                 }
-                controller.db.users.bulkWrite(ops, { ordered: false });
+
+                ops.push(givePizzaOp(message.user, 0, -totalPizzas));
+                await controller.db.users.bulkWrite(ops, { ordered: false });
                 const newBalance = pizzasAvailable - totalPizzas;
                 replyEphemeral(bot, message, `You gave away ${totalPizzas} pizzas total to: ${usersGiven.join(', ')}. Your new balance is ${newBalance}`);
             }
@@ -91,17 +92,35 @@ module.exports = function(controller) {
 
     controller.on('slash_command', async (bot, message) => {
         if (message.command === '/pizzas') {
-            const pizzas = await getPizzasAvailable(controller.db.users, message.user);
-            replyEphemeral(bot, message, `You currently have ${pizzas} in your backpack. (weirdo)`);
+            const userInfo = await getUserInfo(controller.db.users, message.user);
+            await replyEphemeral(bot, message, `:pizza: Available: ${userInfo.pizzas} | :pizza: given to you (total) ${userInfo.pizzasEarned}`);
         }
 
         if (message.command === '/earnedpizzas') {
             const pizzas = await getPizzasEarned(controller.db.users, message.user);
-            replyEphemeral(bot, message, `You've earned ${pizzas} total for your lifetime!`);
+            await replyEphemeral(bot, message, `You've earned ${pizzas} total for your lifetime!`);
+        }
+
+        if (message.command === '/lb' || message.command === '/leaderboard') {
+            const users = await getTopTen(controller.db.users, 'pizzasEarned');
+            const lb = [];
+
+            for (let i = 0; i < users.length; i++) {
+                console.log('test', users[i]);
+                let realName = await getUserRealName(bot, users[i].userId);
+                lb.push(`${realName}      -  ${users[i].pizzasEarned}`);
+            }
+            // const newUsers = await users.reduce(async (red, user) => {
+            //     const newUser = {};
+            //     const realName = await getUserRealName(bot, user.userId);
+            //     newUser[user.userId] = { name: realName, pizzasEarned: user.pizzasEarned };
+            //     red.push(newUser);
+            // }, []);
+            console.log(lb);
         }
 
         if (message.command === '/whoami') {
-            replyEphemeral(bot, message, `Your user ID is ${message.user} and the current channel is ${message.channel}`);
+            await replyEphemeral(bot, message, `Your user ID is ${message.user} and the current channel is ${message.channel}`);
         }
     });
 }
