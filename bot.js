@@ -73,7 +73,7 @@ controller.ready(async () => {
                     userId: member.id
                 },
                 update: {
-                    $setOnInsert: { pizzas: 8, pizzasEarned: 0 }
+                    $setOnInsert: { daily: 8, earned: 0 }
                 },
                 upsert: true
             }
