@@ -91,6 +91,7 @@ module.exports = function(controller) {
         } else if (userIds.includes(message.user)) {
             await reply(bot, message, 'Listen, ya need to quit being greedy!');
         } else {
+            await replyEpehmeral(bot, message, 'Just some debugging. If you see this message twice for one message, :shit:');
             const pizzasToGive = Object.values(userPizzas).reduce((totalPizzas, pizzaCount) => {
                 return totalPizzas + pizzaCount;
             }, 0);
@@ -112,7 +113,7 @@ module.exports = function(controller) {
                     ops.push(currOp);
                     await pizzaBot.startPrivateConversation(userId);
                     await pizzaBot.say(`You received ${userPizzas[userId]} pizzas from ${await getUserRealName(bot, message.user)}. You have earned ${userData.earned + userPizzas[userId]} :pizza:`);
-                }
+                }z
                 const { dailySubtract, earnedSubtract } = pizzaMath(pizzasToGive, userInfo.daily);
                 ops.push(takePizzaOp(message.user, userInfo, dailySubtract, earnedSubtract));
                 await controller.db.users.bulkWrite(ops, { ordered: false });
