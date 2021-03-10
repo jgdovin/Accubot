@@ -9,6 +9,7 @@ const { Botkit } = require('botkit');
 const { BotkitCMSHelper } = require('botkit-plugin-cms');
 const { mongo } = require('./helpers/mongo');
 const mongoOptions = { db: 'accubot', collection: 'users' };
+const schedule = require('node-schedule');
 
 // Import a platform-specific adapter for slack.
 
@@ -60,6 +61,8 @@ if (process.env.CMS_URI) {
     }));
 }
 
+
+
 // Once the bot has booted up its internal services, you can use them to do stuff.
 controller.ready(async () => {
     const ops = [];
@@ -73,7 +76,7 @@ controller.ready(async () => {
                     userId: member.id
                 },
                 update: {
-                    $setOnInsert: { daily: 8, earned: 0 }
+                    $setOnInsert: { daily: 8, earned: 0, given: 0 }
                 },
                 upsert: true
             }
@@ -93,10 +96,10 @@ controller.webserver.get('/', (req, res) => {
 
 });
 
-
-
-
-
+schedule.scheduleJob('0 0 * * *', async () => {
+    await controller.db.users.updateMany({}, { $set: { daily: 8 }});
+    console.log('All users daily pizzas updated.');
+});
 
 controller.webserver.get('/install', (req, res) => {
     // getInstallLink points to slack's oauth endpoint and includes clientId and scopes

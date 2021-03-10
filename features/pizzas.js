@@ -38,11 +38,14 @@ const givePizzaOp = (userId, earned) => {
     };
 };
 
-const takePizzaOp = (userId, userInfo, pizzas) => {
-    const { daily } = userInfo;
-    const dailySubtract = pizzas >= daily ? -daily : -pizzas;
-    const earnedSubtract = pizzas <= daily ? 0 : -(pizzas - daily);
-    console.log(dailySubtract, earnedSubtract, pizzas, daily, userInfo);
+const pizzaMath = (pizzasToGive, dailyAvailable) => {
+    return {
+        dailySubtract: pizzasToGive >= dailyAvailable ? -dailyAvailable : -pizzasToGive,
+        earnedSubtract: pizzasToGive <= dailyAvailable ? 0 : -(pizzasToGive - dailyAvailable)
+    };
+};
+
+const takePizzaOp = (userId, userInfo, dailySubtract, earnedSubtract) => {
     return {
         updateOne: {
             filter: {
@@ -51,7 +54,8 @@ const takePizzaOp = (userId, userInfo, pizzas) => {
             update: {
                 $inc: {
                     daily: dailySubtract,
-                    earned: earnedSubtract
+                    earned: earnedSubtract,
+                    given: -earnedSubtract + -dailySubtract
                 }
             }
         }
@@ -59,6 +63,12 @@ const takePizzaOp = (userId, userInfo, pizzas) => {
 };
 
 module.exports = function(controller) {
+    controller.hears('!debug', 'message', async (bot, message) => {
+        const userList = await controller.adapter.slack.users.list({});
+        console.dir(userList, { depth: null });
+        await reply(bot, message, 'Debug happening, check console');
+    });
+
     controller.hears(':progressstick:', 'message', async (bot, message) => {
         const userPizzas = getUserIdsFromText(message);
         const userIds = Object.keys(userPizzas);
@@ -99,17 +109,14 @@ module.exports = function(controller) {
                     const pizzaBot = await controller.spawn('T033MB5HN');
                     const userData = await getUserPizzaInfo(controller.db.users, userId);
                     const currOp = givePizzaOp(userId, userPizzas[userId]);
-                    console.log(currOp);
                     ops.push(currOp);
                     await pizzaBot.startPrivateConversation(userId);
                     await pizzaBot.say(`You received ${userPizzas[userId]} pizzas from ${await getUserRealName(bot, message.user)}. You have earned ${userData.earned + userPizzas[userId]} :pizza:`);
                 }
-
-                ops.push(takePizzaOp(message.user, userInfo, pizzasToGive));
-                console.dir(ops, {depth: null});
+                const { dailySubtract, earnedSubtract } = pizzaMath(pizzasToGive, userInfo.daily);
+                ops.push(takePizzaOp(message.user, userInfo, dailySubtract, earnedSubtract));
                 await controller.db.users.bulkWrite(ops, { ordered: false });
-                const newBalance = totalPizzasAvailable - pizzasToGive;
-                replyEphemeral(bot, message, `You gave away ${pizzasToGive} pizzas total to: ${usersGiven.join(', ')}. Your new balance is ${newBalance}`);
+                replyEphemeral(bot, message, `You gave away ${pizzasToGive} pizzas total to: ${usersGiven.join(', ')}. Your new balance: :pizza: Daily: ${userInfo.daily + dailySubtract} | :pizza: Earned: ${userInfo.earned + earnedSubtract} (MATH: From daily: ${dailySubtract} | From Earned: ${earnedSubtract})`);
             }
         }
     });
@@ -120,14 +127,40 @@ module.exports = function(controller) {
             await replyEphemeral(bot, message, `:pizza: Daily: ${userInfo.daily} | :pizza: Earned: ${userInfo.earned}`);
         }
 
-        if (message.command === '/lb' || message.command === '/leaderboard') {
-            const users = await getTopTen(controller.db.users, 'pizzasEarned');
+
+
+        if (message.command === '/lb' || message.command === '/leaderboard' || message.command === '/lbg') {
+            const lbType = {
+                lb: 'earned',
+                leaderboard: 'earned',
+                lbg: 'given'
+            };
+            const commandType = message.command.substring(1);
+            const users = await getTopTen(controller.db.users, lbType[commandType]);
             const lb = [];
 
             for (let i = 0; i < users.length; i++) {
-                console.log('test', users[i]);
+                if (users[i][lbType[commandType]] === 0) {
+                    continue;
+                }
                 let realName = await getUserRealName(bot, users[i].userId);
-                lb.push(`${realName}      -  ${users[i].earned}`);
+                lb.push({
+                    type: "section",
+                    text: {
+                        type: "plain_text",
+                        text: realName || 'ERROR :wtf:',
+                        emoji: true
+                    },
+                    accessory: {
+                        type: "button",
+                        text: {
+                            type: "plain_text",
+                            emoji: true,
+                            text: `${users[i][lbType[commandType]]} :pizza:`
+                        },
+                        style: "primary"
+                    }
+                })
             }
             // const newUsers = await users.reduce(async (red, user) => {
             //     const newUser = {};
@@ -135,7 +168,21 @@ module.exports = function(controller) {
             //     newUser[user.userId] = { name: realName, pizzasEarned: user.earned };
             //     red.push(newUser);
             // }, []);
-            console.log(lb);
+            const blocks = [
+                {
+                    "type": "header",
+                    "text": {
+                        "type": "plain_text",
+                        "text": `:pizza: ${lbType[commandType].charAt(0).toUpperCase() + lbType[commandType].slice(1)} Leaderboard :pizza:`,
+                        "emoji": true
+                    }
+                },
+                ...lb
+            ];
+            // console.dir(JSON.stringify(blocks), { depth: null });
+            await bot.reply(message,{
+                blocks
+            });
         }
 
         if (message.command === '/whoami') {
